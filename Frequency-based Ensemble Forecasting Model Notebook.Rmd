@@ -1,0 +1,102 @@
+---
+title: "Frequency-based Ensemble Forecasting Model for the M4 Time Series Forecasting Competition"
+output: html_notebook
+---
+
+This is an R Markdown Notebook for a research paper titled 
+**Frequency-based Ensemble Forecasting Model for the M4 Time Series Forecasting Competition**.
+
+```{r}
+# Load needed packages
+
+library(M4comp2018) # M4 data
+library(ggplot2)
+library(forecast)
+```
+
+```{r}
+# Load M4 data
+data(M4)
+```
+
+```{r}
+# This chunk is to analyze M4 time series data
+
+tseries_count <- 100000
+ts_length <- vector(length = tseries_count)
+
+# Calculate the length of each time series
+for (i in 1:tseries_count) {
+  ts_length[i] <- length(M4[[i]]$x)
+}
+```
+
+```{r}
+# Time series length density curve
+
+mean_val <- mean(ts_length)
+median_val <- median(ts_length)
+df <- data.frame(x = ts_length[ts_length<=1000])
+
+p <- ggplot(df, aes(x=x, fill="#ffaa80")) +
+  geom_density(fill="#ffaa80") +
+  geom_vline(aes(xintercept=mean_val), color="blue", linetype="dashed") +
+  geom_vline(aes(xintercept=median_val), color="black", linetype="dashed") +  
+  labs(title="Time series length density curve", x="Time series length", y = "Density") +
+  theme_classic()
+
+p <- p + geom_segment(aes(x = median_val + 160, y = 0.007, xend = median_val, yend = 0.007),
+                 arrow = arrow(length = unit(0.5, "cm")))
+p <- p + geom_text(x=median_val + 205, y= 0.007, size = 6, label=paste("median = ", as.character(median_val)))
+p <- p + geom_segment(aes(x = mean_val+160, y = 0.005, xend = mean_val, yend = 0.005),
+                     arrow = arrow(length = unit(0.5, "cm")))
+p <- p + geom_text(x=mean_val+210, y=0.005, size = 6, label=paste("mean", "~", as.character(round(mean_val,1))))
+p <- p + theme(text = element_text(size=22))
+p
+```
+
+```{r}
+print(paste("Number of time series used in the curve with length less than 1000 = ", nrow(df)))
+print(paste("The mean of time series length for 100,000 time series = ", mean_val))
+print(paste("The median of time series length for 100,000 time series = ", median_val))
+print(paste("Number of time series with length less than the median = ", sum(df$x<=median_val)))
+
+```
+
+```{r}
+# Calculate the percentages of using the used forecasting methods in the model
+plot_percentages <- function(data, models_names){
+  
+  model_count <- ncol(data[[1]])
+  data_count <- length(data)
+  models <- matrix(nrow = data_count, ncol = model_count)
+  point_count <-  nrow(data[[1]])
+
+  for (data_id in 1:data_count){
+    for(model_id in 1:model_count){
+      models[data_id,model_id] = sum(data[[data_id]][,model_id]>0)/point_count
+    }
+  }
+  
+  results <- data.frame(Models=models_names, Percentages=round(colSums(models)/data_count*100,0))
+  
+  ggplot(data=results,aes(x=Models,y=Percentages,fill=Models)) +
+    geom_bar(stat="identity", width=0.5) +
+    geom_text(aes(label=paste(as.character(Percentages),"%")),size=8, nudge_y=1.9) +
+    theme(text = element_text(size=24)) +
+    ylab("Percentage")+ coord_flip() + theme(legend.position="top")
+}
+```
+
+```{r}
+# load opera data then plot the figures
+load("./opera_data.RData")
+
+plot_percentages (hourly_opera, c("THIEF+ ETS forecasts","THIEF+ ARIMA forecasts","THIEF+ Naïve S forecasts","TBATS"))
+plot_percentages (daily_opera, c("ETS","BATS","Bagged ETS"))
+plot_percentages (weekly_opera, c("Regression with ARIMA errors","TBATS"))
+plot_percentages (monthly_opera, c("THIEF+ ETS forecasts","THIEF+ ETS forecasts ","BATS","TBATS","ETS"))
+plot_percentages (qarterly_opera, c("THIEF+ ETS forecasts","THIEF+ ETS forecasts ","BATS","TBATS","ETS"))
+plot_percentages (weekly_opera, c("TBATS","ETS"))
+```
+
