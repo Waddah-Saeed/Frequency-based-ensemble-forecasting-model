@@ -78,9 +78,7 @@ for(i in 1:series_num){
 
 ########################### M4 HOURLY data forecasting
 # Forecast using the models
-# Aggregate the forecasts from the models based on the weights optained perviously using "opera" package OR you can load it
-
-# load("operaHourly.RData")
+# Aggregate the forecasts from the models based on the weights optained perviously using "opera" package.
 
 fforecasts<-array(NA,dim=c(series_num,fh))
 mforecasts<-array(NA,dim=c(4,fh,1))
