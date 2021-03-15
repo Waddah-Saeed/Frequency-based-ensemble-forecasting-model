@@ -65,9 +65,7 @@ for(i in 1:series_num){
 
 ########################### M4 YEARLY data forecasting
 # Forecast using the models
-# Aggregate the forecasts from the models based on the weights optained perviously using "opera" package OR you can load it
-
-# load("operaYearly.RData")
+# Aggregate the forecasts from the models based on the weights optained perviously using "opera" package.
 
 fforecasts<-array(NA,dim=c(series_num,fh))
 mforecasts<-array(NA,dim=c(2,fh,1))
