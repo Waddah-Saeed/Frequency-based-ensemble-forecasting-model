@@ -58,9 +58,7 @@ for(i in 1:series_num){
 
 ########################### M4 daily data forecasting
 # Forecast using the three models
-# Aggregate the forecasts from the three models based on the weights optained perviously using "opera" package OR you can load it
-
-# load("operaDaily.RData")
+# Aggregate the forecasts from the three models based on the weights optained perviously using "opera" package.
 
 fforecasts<-array(NA,dim=c(series_num,fh))
 mforecasts<-array(NA,dim=c(3,fh,1))
