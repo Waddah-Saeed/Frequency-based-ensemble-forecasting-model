@@ -94,18 +94,7 @@ for(i in 1:series_num){
 
 ########################### M4 MONTHLY data forecasting
 # Forecast using the models
-# Aggregate the forecasts from the models based on the weights optained perviously using "opera" package OR you can load it
-
-# load("operaMonthly-1.RData")
-# load("operaMonthly-2.RData")
-# load("operaMonthly-3.RData")
-# load("operaMonthly-4.RData")
-#OPERA<-NULL
-#OPERA[1:12000]<-OPERA_1
-#OPERA[12001:24000]<-OPERA_2
-#OPERA[24001:36000]<-OPERA_3
-#OPERA[36001:48000]<-OPERA_4
-
+# Aggregate the forecasts from the models based on the weights optained perviously using "opera" package.
 
 fforecasts<-array(NA,dim=c(series_num,fh))
 mforecasts<-array(NA,dim=c(5,fh,1))
