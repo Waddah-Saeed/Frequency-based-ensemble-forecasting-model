@@ -78,9 +78,7 @@ for(i in 1:series_num){
 
 ########################### M4 WEEKLY data forecasting
 # Forecast using the models
-# Aggregate the forecasts from the models based on the weights optained perviously using "opera" package OR you can load it
-
-# load("operaWeekly.RData")
+# Aggregate the forecasts from the models based on the weights optained perviously using "opera".
 
 fforecasts<-array(NA,dim=c(series_num,fh))
 mforecasts<-array(NA,dim=c(2,fh,1))
