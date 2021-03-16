@@ -79,12 +79,12 @@ plot_percentages <- function(data, models_names){
   }
   
   results <- data.frame(Models=models_names, Percentages=round(colSums(models)/data_count*100,0))
-  
-  ggplot(data=results,aes(x=Models,y=Percentages,fill=Models)) +
-    geom_bar(stat="identity", width=0.5) +
-    geom_text(aes(label=paste(as.character(Percentages),"%")),size=8, nudge_y=1.9) +
-    theme(text = element_text(size=24)) +
-    ylab("Percentage")+ coord_flip() + theme(legend.position="top")
+  print(results)
+  # ggplot(data=results,aes(x=Models,y=Percentages,fill=Models)) +
+  #   geom_bar(stat="identity", width=0.5) +
+  #   geom_text(aes(label=paste(as.character(Percentages),"%")),size=6, nudge_y=0.5) +
+  #   theme(text = element_text(size=24)) + scale_x_discrete(labels = NULL, breaks = NULL) + labs(x = "") + 
+  #   ylab("Percentage") + theme(legend.position="top")+ scale_fill_brewer(palette = "Spectral")
 }
 ```
 
