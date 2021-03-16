@@ -9,23 +9,21 @@ This is an R Markdown Notebook for a research paper titled
 ```{r}
 # Load needed packages
 
-library(M4comp2018) # M4 data
-library(ggplot2)
-library(forecast)
+require(M4comp2018) # M4 data
+require(ggplot2)
+require(forecast)
+library(opera)
 ```
 
 ```{r}
+
 # Load M4 data
 data(M4)
-```
 
-```{r}
-# This chunk is to analyze M4 time series data
-
+# Calculate the length of each time series
 tseries_count <- 100000
 ts_length <- vector(length = tseries_count)
 
-# Calculate the length of each time series
 for (i in 1:tseries_count) {
   ts_length[i] <- length(M4[[i]]$x)
 }
@@ -53,15 +51,13 @@ p <- p + geom_segment(aes(x = mean_val+160, y = 0.005, xend = mean_val, yend = 0
 p <- p + geom_text(x=mean_val+210, y=0.005, size = 6, label=paste("mean", "~", as.character(round(mean_val,1))))
 p <- p + theme(text = element_text(size=22))
 p
-```
 
-```{r}
 print(paste("Number of time series used in the curve with length less than 1000 = ", nrow(df)))
 print(paste("The mean of time series length for 100,000 time series = ", mean_val))
 print(paste("The median of time series length for 100,000 time series = ", median_val))
 print(paste("Number of time series with length less than the median = ", sum(df$x<=median_val)))
-
 ```
+
 
 ```{r}
 # Calculate the percentages of using the used forecasting methods in the model
@@ -100,3 +96,92 @@ plot_percentages (qarterly_opera, c("THIEF+ ETS forecasts","THIEF+ ETS forecasts
 plot_percentages (weekly_opera, c("TBATS","ETS"))
 ```
 
+```{r}
+
+smape_cal <- function(outsample, forecasts){
+  #Used to estimate sMAPE
+  outsample <- as.numeric(outsample) ; forecasts<-as.numeric(forecasts)
+  smape <- (abs(outsample-forecasts)*200)/(abs(outsample)+abs(forecasts))
+  return(smape)
+}
+
+DailywithOPERA <- function(training1, validation, training2, outofsample, fh){
+  set.seed(2019)
+  models <- 3
+  forecasts <- matrix(NA, nrow= fh, ncol= models)
+  
+  fitETS1 <- ets(training1)
+  fitBATS1 <- bats(training1, biasadj = FALSE)
+  fitBaggedETS1 <- baggedETS(ts(as.vector(training1)))
+
+  forecasts[,1] <- forecast(fitETS1 ,h=fh)$mean
+  forecasts[,2] <- forecast(fitBATS1 ,h=fh)$mean
+  forecasts[,3] <- forecast(fitBaggedETS1 ,h=fh)$mean
+
+  MLpol0 <- mixture(model = "MLpol", loss.type = "square")
+  x <- cbind(ETS=forecasts[,1], BATS=forecasts[,2], BAGGEDETS=forecasts[,3])
+  MLpol <- predict(MLpol0, newexpert = x, newY = as.vector(validation), online = TRUE, type="all")
+  OPERA <- list(MLpol)
+
+  fitETS1 <- ets(training2)
+  fitBATS1 <- bats(training2, biasadj = FALSE)
+  fitBaggedETS1 <- baggedETS(ts(as.vector(training2)))
+
+  fitETS2 <- ets(outofsample , model= fitETS1, use.initial.values=TRUE)
+  forecasts[,1] <- fitted(fitETS2)
+
+  fitBATS2 <- bats(outofsample, biasadj = FALSE, model= fitBATS1)
+  forecasts[,2] <- fitted(fitBATS2)
+
+  fBaggedETS <- matrix(nrow = length(outofsample), ncol = 100)
+  for (i in 1:100) {
+    fitx <- ets(outofsample , model= fitBaggedETS1$models[[i]], use.initial.values=TRUE)
+    onestepx <- fitted(fitx)
+    fBaggedETS[,i] <- onestepx
+  }
+  forecasts[,3] <- rowMeans(fBaggedETS)
+
+  finalforecasts<-numeric(fh)
+  for(j in 1:fh){
+    finalforecasts[j]<-round(sum(OPERA[[1]]$weights[j,] * forecasts[j,]),4)
+  }
+  
+  finalforecasts<-rowMeans(forecasts)
+
+  results <- accuracy(finalforecasts,outofsample)
+  SMAPE <- smape_cal(outofsample, finalforecasts)
+    
+  print (paste("RMSE = ", round(results[2],4)))
+  print (paste("SMAPE = ", round(mean(SMAPE),6)))
+}
+
+```
+
+```{r}
+# one-step ahead forecasts for EUR/USD time series
+
+load("./eur.RData")
+
+ts <- ts(ts, frequency = 5)
+
+training1 <- window(ts, end= c(94,4))
+validation <- window(ts, start=c(94,5), end= c(125,5))
+
+training2 <- window(ts, end= c(125,5))
+outofsample <- window(ts, start= c(126,1))
+fh <- 156
+
+DailywithOPERA(training1, validation, training2, outofsample, fh)
+
+
+```
+
+```{r}
+# one-step ahead forecasts for Bitcoin time series
+
+load("./bitcoin.RData")
+
+print ("1 year data")
+DailywithOPERA(Close_1year_training, validation, Close_1year_insample, out_of_sample, fh)
+
+```
