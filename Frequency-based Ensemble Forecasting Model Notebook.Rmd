@@ -153,6 +153,8 @@ DailywithOPERA <- function(training1, validation, training2, outofsample, fh){
     
   print (paste("RMSE = ", round(results[2],4)))
   print (paste("SMAPE = ", round(mean(SMAPE),6)))
+  
+  return(finalforecasts)
 }
 
 ```
@@ -171,8 +173,11 @@ training2 <- window(ts, end= c(125,5))
 outofsample <- window(ts, start= c(126,1))
 fh <- 156
 
-DailywithOPERA(training1, validation, training2, outofsample, fh)
+forecasts_eur <- DailywithOPERA(training1, validation, training2, outofsample, fh)
 
+res_eur <- outofsample - forecasts_eur
+ggAcf(res_eur) + ggtitle("ACF of residuals")
+Box.test(res_eur,lag=10, fitdf=0, type="Lj")
 
 ```
 
@@ -182,6 +187,11 @@ DailywithOPERA(training1, validation, training2, outofsample, fh)
 load("./bitcoin.RData")
 
 print ("1 year data")
-DailywithOPERA(Close_1year_training, validation, Close_1year_insample, out_of_sample, fh)
+
+forecasts_bitcoin <- DailywithOPERA(Close_1year_training, validation, Close_1year_insample, out_of_sample, fh)
+
+res <- out_of_sample - forecasts_bitcoin
+ggAcf(res) + ggtitle("ACF of residuals")
+Box.test(res,lag=10, fitdf=0, type="Lj")
 
 ```
