@@ -1,10 +1,10 @@
 ---
-title: "Frequency-based Ensemble Forecasting Model for the M4 Time Series Forecasting Competition"
+title: "Frequency-based Ensemble Forecasting Model for Time Series Forecasting"
 output: html_notebook
 ---
 
 This is an R Markdown Notebook for a research paper titled 
-**Frequency-based Ensemble Forecasting Model for the M4 Time Series Forecasting Competition**.
+**Frequency-based Ensemble Forecasting Model for Time Series Forecasting**.
 
 ```{r}
 # Load needed packages
