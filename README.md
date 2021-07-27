@@ -1,5 +1,5 @@
 # FEEF
-Frequency-based EnsEmble Forecasting model (FEEF)*
+Frequency-based EnsEmble Forecasting model*
 
 The code for Frequency-based EnsEmble Forecasting model.
 
